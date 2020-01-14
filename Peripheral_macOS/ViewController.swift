@@ -23,6 +23,8 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
 
     var charDic = [String: CBMutableCharacteristic]()
 
+    let queue = DispatchQueue.global()
+
     @IBOutlet var textView: NSTextView!
 
     @IBOutlet weak var textField: NSTextField!
@@ -31,11 +33,16 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        let queue = DispatchQueue.global()
+
+    }
+
+    override func viewDidAppear() {
+        super.viewDidAppear()
+
 
         // queue 代表 CBPeripheralManagerDelegate 回來的 delegate method 要在哪個queue執行，寫nil到表在mainthread
         //觸發 1# method
-        peripheralManager = CBPeripheralManager(delegate: self, queue: queue)
+        peripheralManager = CBPeripheralManager(delegate: self, queue: nil)
     }
 
     @IBAction func snedClick(_ sender: NSButton) {
@@ -63,6 +70,7 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
         //先判斷藍牙是否開啟，如果不是藍芽4.x也會回傳電源未開啟
         guard peripheral.state == .poweredOn else {
             //iOS預設會跳警告訊息
+            print("peripheral.state != poweredOn")
             return
         }
 
@@ -117,7 +125,7 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
         //開始廣播，讓Central端可以掃描到Peripheral端資訊，廣播的內容有這個裝置的service，以及Peripheral的名字
         //觸發3# method
         peripheralManager.startAdvertising([CBAdvertisementDataServiceUUIDsKey: [service.uuid],
-                                            CBAdvertisementDataLocalNameKey: ""])
+                                            CBAdvertisementDataLocalNameKey: deviceName])
 
     }
 
